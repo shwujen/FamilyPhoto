@@ -84,11 +84,9 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
-  // 首次進入若尚未連線，自動以預設 URL 嘗試同步
+  // 每次開頁都重新從 GAS 同步，確保照片最新（靜默背景同步）
   useEffect(() => {
-    if (!isDriveConnected) {
-      handleConnectGAS(DEFAULT_GAS_URL, { isAutoSync: true });
-    }
+    handleConnectGAS(undefined, { isAutoSync: true });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -236,6 +234,9 @@ export default function App() {
           fetchUrl += (fetchUrl.includes('?') ? '&' : '?') + 'folderId=' + encodeURIComponent(cleanFolderId);
         }
       }
+
+      // 加上時間戳記防止瀏覽器 / GAS 快取舊資料
+      fetchUrl += (fetchUrl.includes('?') ? '&' : '?') + 't=' + Date.now();
 
       const res = await fetch(fetchUrl, { method: 'GET', redirect: 'follow' });
       const data = await res.json();
