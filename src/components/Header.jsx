@@ -3,8 +3,7 @@ import {
   Settings, 
   Lock, 
   Unlock, 
-  CloudCheck, 
-  CloudOff, 
+  CloudCheck,
   Sparkles,
   Music,
   VolumeX,
@@ -74,16 +73,14 @@ export default function Header({
               {isPlayingBgm ? <Music className="w-4 h-4 animate-pulse text-purple-400" /> : <VolumeX className="w-4 h-4" />}
             </button>
 
-            {isDriveConnected && (
-              <button
-                onClick={onRefresh}
-                disabled={isLoading}
-                className="p-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 hover:text-white"
-                title="快速重新整理同步"
-              >
-                <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-              </button>
-            )}
+            <button
+              onClick={onRefresh}
+              disabled={isLoading}
+              className="p-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 hover:text-white disabled:opacity-50"
+              title="同步照片"
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            </button>
 
             <button 
               onClick={onOpenSettings}
@@ -120,34 +117,38 @@ export default function Header({
           </button>
 
           {/* Google Drive Status & Settings */}
-          {isDriveConnected ? (
-            <div className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-1">
-              <button
-                onClick={onRefresh}
-                disabled={isLoading}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-emerald-300 hover:text-white hover:bg-emerald-500/20 transition-all text-xs font-semibold disabled:opacity-50"
-                title="快速抓取 Google Drive 最新照片"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-                <span>{isLoading ? '同步中...' : '已連線 Drive'}</span>
-              </button>
-              <button
-                onClick={onOpenSettings}
-                className="p-1.5 text-emerald-400/80 hover:text-emerald-200 hover:bg-emerald-500/20 rounded-lg transition-all"
-                title="Google Drive 串接設定"
-              >
-                <Settings className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          ) : (
+          <div className={`flex items-center gap-1 rounded-xl p-1 border ${
+            isDriveConnected
+              ? 'bg-emerald-500/10 border-emerald-500/30'
+              : 'bg-amber-500/10 border-amber-500/30'
+          }`}>
+            <button
+              onClick={onRefresh}
+              disabled={isLoading}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-all text-xs font-semibold disabled:opacity-50 ${
+                isDriveConnected
+                  ? 'text-emerald-300 hover:text-white hover:bg-emerald-500/20'
+                  : 'text-amber-300 hover:text-white hover:bg-amber-500/20'
+              }`}
+              title="同步照片"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+              <span>
+                {isLoading ? '同步中...' : isDriveConnected ? '已連線 Drive' : '同步照片'}
+              </span>
+            </button>
             <button
               onClick={onOpenSettings}
-              className="px-3 py-2 rounded-xl border text-xs font-semibold flex items-center gap-2 transition-all bg-amber-500/10 border-amber-500/30 text-amber-300 hover:bg-amber-500/20"
+              className={`p-1.5 rounded-lg transition-all ${
+                isDriveConnected
+                  ? 'text-emerald-400/80 hover:text-emerald-200 hover:bg-emerald-500/20'
+                  : 'text-amber-400/80 hover:text-amber-200 hover:bg-amber-500/20'
+              }`}
+              title="Google Drive 串接設定"
             >
-              <CloudOff className="w-4 h-4" />
-              <span>設定 Drive 串接</span>
+              <Settings className="w-3.5 h-3.5" />
             </button>
-          )}
+          </div>
 
           {/* Privacy Lock */}
           <button
