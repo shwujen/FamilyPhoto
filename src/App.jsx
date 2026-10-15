@@ -39,6 +39,8 @@ function resolvePhotoDate(name, pathOrAlbum, fallbackDate, fallbackYear) {
   };
 }
 
+const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbxZuqEkp5jkBvb6hY_NMoPSzuK4IuL5etNrDwoKbTM87FXIen2-Pn3H8CsbTd8k9tgp/exec';
+
 export default function App() {
   const [photos, setPhotos] = useState(() => {
     const saved = localStorage.getItem('family_photos_cache');
@@ -64,7 +66,7 @@ export default function App() {
   });
 
   const [gasUrl, setGasUrl] = useState(() => {
-    return localStorage.getItem('gas_url') || '';
+    return localStorage.getItem('gas_url') || DEFAULT_GAS_URL;
   });
 
   const [driveFolderId, setDriveFolderId] = useState(() => {
@@ -81,6 +83,14 @@ export default function App() {
   const [isPlayingBgm, setIsPlayingBgm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  // 首次進入若尚未連線，自動以預設 URL 嘗試同步
+  useEffect(() => {
+    if (!isDriveConnected) {
+      handleConnectGAS(DEFAULT_GAS_URL);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Background Audio Element
   useEffect(() => {
@@ -204,20 +214,12 @@ export default function App() {
   };
 
   // Connect to Google Apps Script API
-  const handleConnectGAS = async () => {
-    let cleanUrl = gasUrl ? gasUrl.trim() : '';
-    if (!cleanUrl) {
-      alert('請填入完整部署好的 Google Apps Script Web App URL！');
-      return;
-    }
+  const handleConnectGAS = async (urlOverride) => {
+    let cleanUrl = (urlOverride || gasUrl || DEFAULT_GAS_URL).trim();
 
     // Ensure URL ends with /exec
     if (!cleanUrl.includes('/exec')) {
-      if (cleanUrl.endsWith('/')) {
-        cleanUrl += 'exec';
-      } else {
-        cleanUrl += '/exec';
-      }
+      cleanUrl += cleanUrl.endsWith('/') ? 'exec' : '/exec';
     }
 
     setIsLoading(true);
@@ -290,7 +292,10 @@ export default function App() {
       }
     } catch (err) {
       console.error(err);
-      alert('連線失敗！請確認以下 3 個常見問題：\n\n1. 部署設定：誰可以存取 (Who has access) 必須選「所有人 (Anyone)」\n2. 重新部署：修改語法後是否有選「新建部署」或「新建版本」？\n3. 網址結尾：網址最後必須包含 /exec');
+      // 只有在使用者明確按「連線」（非自動載入）時才彈出詳細提示
+      if (urlOverride === undefined) {
+        alert('連線失敗！請確認以下 3 個常見問題：\n\n1. 部署設定：誰可以存取 (Who has access) 必須選「所有人 (Anyone)」\n2. 重新部署：修改語法後是否有選「新建部署」或「新建版本」？\n3. 網址結尾：網址最後必須包含 /exec');
+      }
     } finally {
       setIsLoading(false);
     }
